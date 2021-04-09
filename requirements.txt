@@ -1,0 +1,14 @@
+numpy~=1.20.0
+pandas~=1.2.1
+pxpy~=1.0a66
+networkx~=2.5
+pyRAPL~=0.2.3.1
+lxml~=4.6.2
+psutil~=5.8.0
+matplotlib~=3.3.4
+pynvml~=8.0.4
+
+EvalDNN~=0.13
+opencv-python~=4.5.1.48
+cleverhans~=4.0.0
+thop~=0.0.31.post2005241907

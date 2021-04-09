@@ -1,0 +1,5 @@
+{
+    "Finds theoretical optimum?": "Reliability",
+    "Has linear runtime wrt. data dimension??": "Reliability",
+    "Has quadratic runtime wrt. data dimension?": "Reliability"
+}

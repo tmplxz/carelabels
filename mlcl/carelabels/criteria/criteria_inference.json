@@ -1,0 +1,8 @@
+{
+    "Exact inference?": "Reliability",
+    "Has a known PAC bound": "Reliability",
+    "Sample Complexity?": "Reliability",
+
+    "Is free of hyperparameters": "Usability",
+    "Hyperparameters are easy to interpret?": "Usability"
+}

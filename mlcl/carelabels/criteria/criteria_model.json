@@ -1,0 +1,45 @@
+{
+    "Applicable for different scenarios?": "Expressivity",
+    "Can be used on data streams?": "Expressivity",
+    "Explainable by design?": "Expressivity",
+    "Provides Uncertainty?": "Expressivity",
+    "Provides true probabilities?": "Expressivity",
+
+    "Robustness tests?": "Reliability",
+    "Memory complexity guarantees?": "Reliability",
+    "Runtime complexity guarantees?": "Reliability",
+    "Sample Complexity?": "Reliability",
+    "Has a known PAC bound": "Reliability",
+
+    "Easy to train": "Usability",
+    "Is free of hyperparameters": "Usability",
+    "Hyperparameters are easy to interpret?": "Usability",
+    "Compression": "Usability",
+
+    "Is Black Box?":
+    {
+        "XAI algorithm available?": "Expressivity"
+    },
+    "Is generative?":
+    {
+        "Models distributions from the exponential family of densities?": "Expressivity",
+        "Multimodal Distribution?": "Expressivity",
+        "Allows MAP queries?": "Expressivity",
+        "Allows marginal queries?": "Expressivity",
+        "Has conditional probabilities?": "Expressivity",
+        "Allows sampling?": "Expressivity",
+        "Can handle missing data?": "Expressivity"
+    },
+    "Is discrimintave?":
+    {
+        "Universal Function Approx": "Expressivity",
+        "Is Class":
+        {
+            "Multilabel Class": "Expressivity"
+        },
+        "Is Regress":
+        {
+
+        }
+    }
+}

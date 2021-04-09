@@ -1,0 +1,71 @@
+{
+  "name": "$Type + $Inference",
+  "description": "$Type with $Inference on grid strutcture.",
+  "runtime": -1,
+  "memory": 1,
+  "criteria": [
+    "Provides Uncertainty?",
+    "Provides true probabilities?",
+    "Can be used on data streams?",
+    "Applicable for different scenarios?",
+
+    "Runtime complexity guarantees?",
+    "Memory complexity guarantees?",
+
+    "Compression",
+
+    {
+      "Is generative?":
+      [
+          "Models distributions from the exponential family of densities?",
+          "Multimodal Distribution?",
+          "Allows MAP queries?",
+          "Allows marginal queries?",
+          "Has conditional probabilities?",
+          "Allows sampling?",
+          "Can handle missing data?"
+      ]
+    }
+  ],
+  "configurable": {
+    "Type": {
+      "MRF": {
+        "name": "MRF",
+        "description": "Markov random field"
+      }
+    },
+    "Optimization": {
+      "Gradient_Descent": {
+      }
+    },
+    "Inference": {
+      "Belief_Propagation": {
+        "runtime": 1,
+        "memory": 0,
+        "name": "LBP",
+        "description": "approximate LBP inference"
+      },
+      "Junction_Tree": {
+        "runtime": 3,
+        "memory": 3,
+        "name": "JT",
+        "description": "exact JT inference",
+        "criteria": [
+          "Has a known PAC bound",
+          "Sample Complexity?",
+          "Exact inference?",
+
+          "Is free of hyperparameters",
+          "Hyperparameters are easy to interpret?"
+        ]
+      }
+    },
+    "Loss": {
+      "Likelihood": {
+        "criteria": [
+          "Error bounds on loss?"
+        ]
+      }
+    }
+  }
+}

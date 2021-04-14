@@ -30,13 +30,9 @@ def init_implementation(impl_name):
 
 
 def prepare_dataset_list(data_dir, benchmark_data):
-    if os.path.exists(data_dir) and not os.path.isdir(data_dir):
-        # Listify single object.
-        print(f'Scaling data path "{data_dir}" is a file, so using this and not running further scaling benchmark experiments.')
-        scaling_data = [data_dir]
 
-    elif not os.path.exists(data_dir) or len(os.listdir(data_dir)) == 0:
-        print(f'Scaling data path "{data_dir} not found or empty, not running scaling benchmark experiments.')
+    if not os.path.exists(data_dir) or not os.path.isdir(data_dir) or len(os.listdir(data_dir)) == 0:
+        print(f'Scaling data directory "{data_dir}" not found or empty, will not run scaling benchmark experiments.')
         scaling_data = []
     else:
         scaling_data = sorted([os.path.join(data_dir, file) for file in os.listdir(data_dir) if file.endswith('.pkl')])
@@ -189,56 +185,45 @@ def check_complexity(measurements, varied, log_key):
     return onot_complexity
 
 
-# Returns whether the model fitted best on
-# 0: Linear
-# 1: Quadratic
-# 2: Exponential
-# TODO add cubic
-def test_onot_r2(x, y, n_splits=5):
+def test_onot_r2(x, y, n_splits=5, n_reruns=5):
+    """
+    Returns whether measurements follow linear, quadratic, cubic or exponential complexity
+    """
+
+    all_r2 = []
+
+    preprocess_functions = [
+        lambda values: values, # linear, no preprocessing
+        np.sqrt, # quadratic
+        np.cbrt, # cubic root
+        np.log # exponential, https://stackoverflow.com/questions/3433486/how-to-do-exponential-and-logarithmic-curve-fitting-in-python-i-found-only-poly
+    ]
+
     n_splits = min(max(n_splits // 6, 2), n_splits) # have at least 6 measurements per split!
+    splits = list(KFold(n_splits=n_splits, shuffle=True).split(x))
+    seeds = np.random.randint(0, n_reruns * 10, n_reruns)
 
-    kf = KFold(n_splits=n_splits, shuffle=True)
+    for prep in preprocess_functions:
 
-    r2_linear = []
-    r2_quadratic = []
-    r2_exp = []
+        errors = []
+        for train_index, test_index in splits:
+            X_train, X_test = x[train_index], x[test_index]
+            y_train, y_test = y[train_index], y[test_index]
 
-    nr_reruns = 20
+            if len(X_train.shape) < 2:
+                X_train = X_train.reshape(-1, 1)
+            if len(X_test.shape) < 2:
+                X_test = X_test.reshape(-1, 1)
+            
+            for seed in seeds:
+                np.random.seed(seed)
+                lr = LinearRegression()
+                lr.fit(X_train, prep(y_train.flatten()))
+                errors.append(r2_score(prep(y_test), lr.predict(X_test)))
+        
+        all_r2.append(np.mean(errors))
 
-    for train_index, test_index in kf.split(x):
-        X_train, X_test = x[train_index], x[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-
-        if len(X_train.shape) < 2:
-            X_train = X_train.reshape(-1, 1)
-        if len(X_test.shape) < 2:
-            X_test = X_test.reshape(-1, 1)
-
-        for _ in range(nr_reruns):
-            lr = LinearRegression()
-            lr.fit(X_train, y_train)
-
-            scr = r2_score(y_test, lr.predict(X_test))
-            if scr > 0:
-                r2_linear.append(scr)
-
-        for _ in range(nr_reruns):
-            lr = LinearRegression()
-            lr.fit(X_train, np.sqrt(y_train.flatten()))
-            scr = r2_score(np.sqrt(y_test), lr.predict(X_test))
-            if scr > 0:
-                r2_quadratic.append(scr)
-
-        # https://stackoverflow.com/questions/3433486/how-to-do-exponential-and-logarithmic-curve-fitting-in-python-i-found-only-poly
-        for _ in range(nr_reruns):
-            lr = LinearRegression()
-            lr.fit(X_train, np.log(y_train))
-
-            scr = r2_score(np.log(y_test), lr.predict(X_test))
-            if scr > 0:
-                r2_exp.append(scr)
-
-    return np.argmax([np.mean(r2_linear), np.mean(r2_quadratic), np.mean(r2_exp)])
+    return np.argmax(all_r2)
 
 
 def encode(value_list):

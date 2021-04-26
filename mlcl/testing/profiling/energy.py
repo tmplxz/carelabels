@@ -13,7 +13,7 @@ class DummyEnergyProfiling(Profiling):
             "uncore": 0.0
         }
 
-        return result
+        return result, None
 
 
 class PyRaplEnergyProfiling(Profiling):
@@ -29,21 +29,21 @@ class PyRaplEnergyProfiling(Profiling):
     def run(self, func):
 
         inner_begin = self.monitor.sample()
-        func()
+        result = func()
         inner_end = self.monitor.sample()
 
         diff = inner_end - inner_begin
-        result = {'DURATION': diff.duration}
+        prof = {'DURATION': diff.duration}
 
         # Extract package, dram and core values
         for d in diff.domains:
             domain = diff.domains[d]
             power = diff.average_power(package=domain.name)
-            result[domain.name] = power
+            prof[domain.name] = power
 
             for sd in domain.subdomains:
                 subdomain = domain.subdomains[sd]
                 power = diff.average_power(package=domain.name, domain=subdomain.name)
-                result[subdomain.name] = power
+                prof[subdomain.name] = power
 
-        return result
+        return prof, result

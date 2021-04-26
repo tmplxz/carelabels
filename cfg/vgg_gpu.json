@@ -1,0 +1,4 @@
+{
+    "model": "VGG11",
+    "gpu": true
+}

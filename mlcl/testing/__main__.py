@@ -45,22 +45,27 @@ if __name__ == '__main__':
             config = json.load(clf)
         
         implementation.prepare(config)
-        X_train, X_test, y_train, y_test, info = implementation.ds_class(args.datafile).data()
-        print(args.datafile)
-        info['logfile'] = args.log_file
+        data_handler = implementation.ds_class(args.datafile)
+        data_info = data_handler.info()
+
+        data_info['logfile'] = args.log_file
 
         if args.train_apply == 'train':
-            func = lambda: implementation.train(X_train, y_train, info)
+            data_train = data_handler.get_train()
+            func = lambda: implementation.train(data_train, data_info)
         elif args.train_apply == 'apply':
-            func = lambda: implementation.apply(X_test, info)
+            data_apply = data_handler.get_apply()
+            func = lambda: implementation.apply(data_apply, data_info)
         else:
             raise RuntimeError(f'"{args.train_apply}" is not valid, please pass "train" or "apply"!')
 
         # run and log profiling
-        result = profiling.run(func)
+        prof, result = profiling.run(func)
+        if result is not None:
+            prof.update(data_handler.evaluate(result))
 
     except Exception as exc:
-        result = {'ERROR': str(exc)}
+        prof = {'ERROR': str(exc)}
 
     with open(args.log_file, 'w', encoding='utf-8') as lf:
-        json.dump(result, lf)
+        json.dump(prof, lf)

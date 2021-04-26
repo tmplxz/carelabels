@@ -1,14 +1,24 @@
+# general
 numpy~=1.20.0
-pandas~=1.2.1
-pxpy~=1.0a66
-networkx~=2.5
-pyRAPL~=0.2.3.1
-lxml~=4.6.2
+scikit-learn~=0.24.1
+
+# profiling
 psutil~=5.8.0
-matplotlib~=3.3.4
+
+# GPU profiling
 pynvml~=8.0.4
 
-EvalDNN~=0.13
+# PXPY / MRF experiments
+pxpy~=1.0a66
+networkx~=2.5
+
+# DNN experiments
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.1+cpu
+torchvision==0.9.1+cpu
+torchaudio===0.8.1
+# OR
+# torch==1.8.1+cu102
+# torchvision==0.9.1+cu102
+# torchaudio===0.8.1
 opencv-python~=4.5.1.48
-cleverhans~=4.0.0
-thop~=0.0.31.post2005241907

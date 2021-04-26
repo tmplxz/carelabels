@@ -10,9 +10,9 @@ class RuntimeProfiling(Profiling):
     def run(self, func):
 
         t1 = time.time()
-        func()
+        result = func()
         t2 = time.time()
 
         return {
             'WCT': t2 - t1,
-        }
+        }, result

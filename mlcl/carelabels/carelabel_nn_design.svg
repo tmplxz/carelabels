@@ -793,9 +793,9 @@
 <path id="ENE_C" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="7.6858552e-06" inkscape:transform-center-y="-1.3816136e-05" sodipodi:arg1="1.5707963" sodipodi:arg2="2.0943951" sodipodi:cx="1018.6141" sodipodi:cy="176.4856" sodipodi:r1="30.561003" sodipodi:r2="26.466602" sodipodi:sides="6" sodipodi:type="star" class="st22" d="
 	M1756,836.8l-40.4-70l40.4-70h80.8l40.4,70l-40.4,70H1756z"/>
 <text id="ENE_R" transform="matrix(1 0 0 1 1768.5917 792.3302)" class="st11 st12 st13">D</text>
-<path id="ST_RUN" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="7.6858552e-06" inkscape:transform-center-y="-1.3816136e-05" sodipodi:arg1="1.5707963" sodipodi:arg2="2.0943951" sodipodi:cx="1018.6141" sodipodi:cy="176.4856" sodipodi:r1="30.561003" sodipodi:r2="26.466602" sodipodi:sides="6" sodipodi:type="star" class="st23" d="
+<path id="RUN_C" inkscape:flatsided="true" inkscape:randomized="0" inkscape:rounded="0" inkscape:transform-center-x="7.6858552e-06" inkscape:transform-center-y="-1.3816136e-05" sodipodi:arg1="1.5707963" sodipodi:arg2="2.0943951" sodipodi:cx="1018.6141" sodipodi:cy="176.4856" sodipodi:r1="30.561003" sodipodi:r2="26.466602" sodipodi:sides="6" sodipodi:type="star" class="st23" d="
 	M1756,476.8l-40.4-70l40.4-70h80.8l40.4,70l-40.4,70H1756z"/>
-<text id="ST_RUN_R" transform="matrix(1 0 0 1 1768.5917 432.3302)" class="st11 st12 st13">B</text>
+<text id="RUN_R" transform="matrix(1 0 0 1 1768.5917 432.3302)" class="st11 st12 st13">B</text>
 <!-- <text id="DYN_ENE_" transform="matrix(1 0 0 1 303.5618 1618.5831)" class="st5 st24">energy</text> -->
 <text id="ENERGY" text-anchor="end" transform="matrix(1 0 0 1 470 1620)" class="st5 st24">energy</text>
 <text id="ENERGY1" text-anchor="end" transform="matrix(1 0 0 1 470 1590)" class="st5 st34"></text>

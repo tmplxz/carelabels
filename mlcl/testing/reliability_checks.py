@@ -89,6 +89,6 @@ def probability_recovery(implementation, args):
 
     return {
         'success': all([kl < threshold for kl in kl_diffs]),
-        'description': 'The error on the recovered marginal vector has to be below a threshold defined by the Hoeffding Bound.',
+        'description': 'The error on the recovered marginal vector has to be below a threshold defined by the Hoeffding Bound.', # TODO wrong description
         'details': '\n'.join([f'{name} - Maximum KL divergence {kl}' for name, kl in zip(names, kl_diffs)])
     }

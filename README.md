@@ -1,7 +1,5 @@
 # CERTIFICATION SUITE FOR MACHINE LEARNING CARE LABELS
 
-**MORE CODE WILL BE ADDED SOON** 
-
 This is a prototype certification suite, which generates **Care Labels** for trustworthy and resource-aware machine learning.
 It is closely related to research work which is currently reviewed for ECML 2021, where we explain the concepts of our certification suite in detail.
 **This is only a blinded preview for paper reviewers**, upon acceptance we will transfer this repository to the authors' GitHub.
@@ -10,7 +8,6 @@ It is closely related to research work which is currently reviewed for ECML 2021
 We tested our software on `Ubuntu 18.04`, with Intel CPUs and NVIDIA GPUs, other architures are unlikely to be supported.
 
 ## Setup
-
 Install python3.8 (or create an Anaconda environment)
 
 ```bash
@@ -23,32 +20,64 @@ Install required packages
 pip3 install -r requirements.txt
 ```
 
-#### Data
-You can download our synthetic data from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>, ideally extract the `.pkl` files into a new directory named `data`.
-
-#### RAPL Rights
 We use Intel's "Running Average Power Limit" (RAPL) for measuring the energy consumption.
-For using it, you might have to change some access permissions, commands can be found in `set_rapl_rights.sh`.
+Install it from the corresponding repository:
 
-#### GPU Support
-`coming soon`
+```bash
+git clone https://github.com/wkatsak/py-rapl
+cd py-rapl
+pip3 install .
+```
+
+For using it, you might have to change some access permissions, exemplary commands can be found in `set_rapl_rights.sh`.
+
+### DNN Specifics
+
+Per default, PyTorch will be installed for CPU only, but you can simply change the according lines in the `requirements.txt`.
+
+If you want to perform experiments on your own, download the `ImageNet` data as well as robustness data from <https://github.com/hendrycks/robustness>. Make sure that all three lie in the same directory, e.g. `<path>/imagenet/...`, `<path>/imagenet-c/...`, `<path>/imagenet-p/...`.
+
+For Noise robustness tests we use `cleverhans` attacks. The current version is not yet on PyPI, so install it via
+
+```bash
+git clone https://github.com/cleverhans-lab/cleverhans
+cd cleverhans
+pip3 install .
+```
+
+### MRF Specifics
+
+The PyPI version of `pxpy` has some bugs that currently prevent GPU usage.
+They can be manually fixed by modifying the installed `__init__.py` file in the `pxpy` directory:
+- replace line 797  (`EXTINF = ext_lib.external(itype,vtype)`) with `EXTINF = ext_lib.external(self.itype,self.vtype)`
+- replace line 873  (`EXTINF = ext_lib.external(itype,vtype)`) with `EXTINF = ext_lib.external(self.itype,self.vtype)`
+- replace line 2251 (`EXTINF = ext_lib.external(itype,vtype)`) with `EXTINF = ext_lib.external(switch_type(itype), switch_type(vtype))`
+
+You can download our synthetic data from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>, the directory with the unpacked data (`.pkl` files) has to be passed to the software.
 
 ## Usage
-Firstly, run `export OMP_NUM_THREADS=1` for deactivating the `pxpy` internal CPU parallelization.
+The verification suite can be run via the `main.py`, it creates a whole bunch of logfiles, and finally aggregates them into the care label.
+
+#### DNN Experiments
+During our paper experiments we worked with multiple prototype scripts, which together generated a big `.csv` report, that was then assessed for generating the care labels.
+You can inspect this report (`results` folder) and generate the care labels via running the `generate_dnn_labels.py` script.
+Note that before the submission, we had a small code error that lead to faulty results for the Corruption robustness test, accordingly the results in the paper slightly differ from this repository and will be fixed upon camera-ready submission.
+
+We incorporated all functionality into our main software, but do not yet have the complete logs and results for sharing.
+You can however already perform the experiments yourself by running `python main.py` (pass the directory with `ImageNet` for `--benchmark`).
+You can change defaults by passing different configurations (located in `cfg`).
+Note that performing robustness tests for DNN models takes several days even on modern hardware like `Nvidia A100` GPUs.
 
 #### MRF Experiments (CPU)
-Run `python main.py`, the default command-line arguments should work fine but allow for some customization (e.g. for switching between the JT and BP configs).
-The resulting care label content gets printed in the command line and an `.svg` graphic with the label itself will be generated.
+Firstly, run `export OMP_NUM_THREADS=1` for deactivating the `pxpy` internal CPU parallelization.
+Similar to the DNN experiments, run `python main.py`, but pass `PXMRF` as implementation, and `cfg/mrf_bp.json` or `cfg/mrf_jt.json` as config.
+For data, pass the directory with the unpacking `.pkl` files as `--scaling-data`, and any of the file names for `--benchmark` (we used `grid_nodes14_states2_nsamples50000.pkl` in our experiments).
+You can also use our experiment logs instead of running the whole procedure on your own, simply download and unpack the `logs.7z` from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>.
 
 Be aware that running experiments might take some time, especially with using JT und increasing number of `repeats`.
 The high runtime stems from the different profiling measurements (runtime, memory, energy), which are all run separately.
-We will soon also publish our logs as created by the software, for faster reproducibility.
 
 #### MRF Experiments (GPU)
-`coming soon`
-
-#### DNN Experiments (CPU)
-`coming soon`
-
-#### DNN Experiments (GPU)
-`coming soon`
+For running `pxpy` on GPUs, you first have to set the `PX_EXTINF` variable towards the separately compiled inference engines.
+For LBP inference, simply `export PX_EXTINF=[pxpy install directory]/lib/libpx_ext_culbp.so`, and run the software with `--config cfg/mrf_bp_gpu.json`.
+For JT inference, we compiled a custom shared object which can be found in the `lib` directory of this repository, so `export PX_EXTINF=lib/libexternal_gpu_single_buffer.so`, and use `--config cfg/mrf_jt_gpu.json`.

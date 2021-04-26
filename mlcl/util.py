@@ -6,7 +6,7 @@ from sklearn.model_selection import KFold
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-from mlcl.implementations import PXMRF
+from mlcl.implementations import PXMRF, PretrainedImageNetDNN
 
 
 complexity_classes = [
@@ -18,7 +18,7 @@ complexity_classes = [
 
 
 def init_implementation(impl_name):
-    implemented_classes = [PXMRF]
+    implemented_classes = [PXMRF, PretrainedImageNetDNN]
 
     for imp_cls in implemented_classes:
         if imp_cls.__name__ == impl_name:
@@ -37,7 +37,7 @@ def prepare_dataset_list(data_dir, benchmark_data):
     else:
         scaling_data = sorted([os.path.join(data_dir, file) for file in os.listdir(data_dir) if file.endswith('.pkl')])
     
-    if not os.path.exists(benchmark_data) or os.path.isdir(benchmark_data):
+    if not os.path.exists(benchmark_data):
         for ds in scaling_data:
             if benchmark_data == os.path.basename(ds):
                 bench_data = ds
@@ -51,6 +51,10 @@ def prepare_dataset_list(data_dir, benchmark_data):
     else:
         bench_data = benchmark_data
     return scaling_data, bench_data
+
+
+def aggregate_accuracy(measurements, rep_agg=np.mean):
+    return rep_agg(np.array(measurements["APPLY_RUNTIME_Accuracy"]) * 100)
 
 
 def aggregate_runtime(measurements, rep_agg=np.mean):
@@ -131,12 +135,13 @@ def check_scale(value, bins):
         raise RuntimeError(f'Bin list {bins} is not sorted!')
 
 
-def extract_benchmark_results(benchmark_measurements, runtime_scale, memory_scale, energy_scale):
+def extract_benchmark_results(benchmark_measurements, scales):
     if 'cl_name' in benchmark_measurements:
         name = benchmark_measurements['name']
     else:
         # for older logs
-        name = ''.join(re.match('(.*)_nodes(\d*).*', benchmark_measurements['name']).groups()).capitalize()
+        name = ''.join(re.match(r'(.*)_nodes(\d*).*', benchmark_measurements['name']).groups()).capitalize()
+    accuracy = aggregate_accuracy(benchmark_measurements)
     runtime = aggregate_runtime(benchmark_measurements)
     memory = aggregate_memory(benchmark_measurements)
     energy = aggregate_energy(benchmark_measurements)
@@ -145,15 +150,17 @@ def extract_benchmark_results(benchmark_measurements, runtime_scale, memory_scal
     # remove benchmark measurements
     results = {
         'name': name,
+        'accuracy': accuracy,
         'runtime': runtime, # seconds
         'memory': memory, # byte
         'energy': energy, # Watt seconds
         'gpu_memory': gpu_memory, # byte
         'gpu_energy': gpu_energy, # Watt seconds
         
-        'runtime_rating': check_scale(runtime, runtime_scale),
-        'memory_rating': check_scale(memory + gpu_memory, memory_scale),
-        'energy_rating': check_scale(energy + gpu_energy, energy_scale),
+        'accuracy_rating': check_scale(accuracy, scales['accuracy']),
+        'runtime_rating': check_scale(runtime, scales['runtime_time']),
+        'memory_rating': check_scale(memory + gpu_memory, scales['memory_bytes']),
+        'energy_rating': check_scale(energy + gpu_energy, scales['energy_Ws']),
     }
     return results
 

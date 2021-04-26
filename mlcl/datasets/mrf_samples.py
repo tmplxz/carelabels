@@ -56,23 +56,44 @@ class MRF_Samples(DatasetBase):
 
     def __init__(self, cfg):
         self.f_name = cfg
+        # TODO configure via command line
+        self.predict_samples = 50
+        self.hide_amount = 0.2
+        self.loaded = Result.from_file(self.f_name).data_dict
+        self.X_train, X_test = train_test_split(self.loaded['sample_data'])
+        self.X_test = X_test[:self.predict_samples]
+        
+        # hide some values
+        self.X_hidden = np.zeros_like(self.X_test).astype(bool)
+        idc1, idc2 = np.unravel_index(np.random.choice(np.arange(self.X_test.size), size=int(self.X_test.size * self.hide_amount), replace=False), self.X_test.shape)
+        self.X_hidden[idc1, idc2] = True
 
-    def data(self):
-        loaded = Result.from_file(self.f_name).data_dict
+    def get_train(self):
+        return self.X_train
+
+    def get_apply(self):
+        data = self.X_test.copy()
+        data[self.X_hidden] = -1
+        return data
+
+    def info(self):
         info = {}
         info['name'] = os.path.basename(self.f_name.split('.')[0])
-        info['cl_name'] = ''.join(re.match('(.*)_nodes(\d*).*', os.path.basename(self.f_name)).groups()).capitalize()
+        info['cl_name'] = ''.join(re.match(r'(.*)_nodes(\d*).*', os.path.basename(self.f_name)).groups()).capitalize()
         info['graph_type'] = get_graph_type(info['name'])
-        info['states'] = int(np.max(loaded['states']))
-        info['vertices'] = len(np.unique(loaded['edgelist']))
-        info['T'] = loaded['T']
-        info['edgelist'] = loaded['edgelist']
-        info['weights'] = loaded['weights']
-        info['mu'] = loaded['mu']
-        info['seed'] = loaded['seed']
-        info['gibbs_iterations'] = loaded['gibbs_iterations']
-        info['max_delta'] = loaded['max_delta']
-        X_train, X_test = train_test_split(loaded['sample_data'])
-        y_train, y_test = None, None
+        info['states'] = int(np.max(self.loaded['states']))
+        info['vertices'] = len(np.unique(self.loaded['edgelist']))
+        info['T'] = self.loaded['T']
+        info['edgelist'] = self.loaded['edgelist']
+        info['weights'] = self.loaded['weights']
+        info['mu'] = self.loaded['mu']
+        info['seed'] = self.loaded['seed']
+        info['gibbs_iterations'] = self.loaded['gibbs_iterations']
+        info['max_delta'] = self.loaded['max_delta']
+        info['predict_samples'] = self.predict_samples
 
-        return X_train, X_test, y_train, y_test, info
+        return info
+
+    def evaluate(self, prediction):
+        acc = np.count_nonzero(self.X_test[self.X_hidden] == prediction[self.X_hidden]) / np.count_nonzero(self.X_hidden)
+        return {'Accuracy': acc}

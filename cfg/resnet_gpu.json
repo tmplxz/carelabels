@@ -1,0 +1,4 @@
+{
+    "model": "ResNet-18",
+    "gpu": true
+}

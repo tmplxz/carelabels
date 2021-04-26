@@ -1,0 +1,12 @@
+{
+    "Type": "MRF",
+    "Inference": "Junction_Tree",
+    "Additional":
+    {
+        "gpu": true,
+        "train_iters": 50,
+        "predict_iters": 50,
+        "predict_samples": 50,
+        "infer_iters": 5
+    }
+}

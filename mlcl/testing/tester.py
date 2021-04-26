@@ -9,9 +9,12 @@ from collections import defaultdict
 import numpy as np
 
 from .reliability_checks import probability_recovery, runtime_complexity, memory_complexity
+from .robustness.perturbation import PerturbationTest
+from .robustness.corruption import CorruptionTest
+from .robustness.noise import NoiseTest
 
 
-class Implementation_Profiling:
+class ImplementationProfiling:
 
     def __init__(self, implementation, config, scaling, benchmark, logdir, repeats):
         self.implementation = implementation
@@ -24,8 +27,6 @@ class Implementation_Profiling:
             os.makedirs(logdir)
 
     def run(self):
-        scaling_measurements = {}
-        print(f'Running profiling on {len(self.scaling)} datafiles.')
         
         # write temp file with implementation config for the profiling subprocesses
         fd, tmp = tempfile.mkstemp('w')
@@ -36,35 +37,36 @@ class Implementation_Profiling:
             raise RuntimeError(f'Could not find "{tmp}" as config file!')
 
         # run profiling for each dataset
+        scaling_measurements = {}
         to_benchmark = self.scaling + [self.benchmark]
+        print(f'Running experiments on {len(to_benchmark)} data sets.')
+
         for idx, df in enumerate(to_benchmark):
 
             # assess general information about dataset
-            X_train, X_test, _, _, info = self.implementation.ds_class(df).data()
+            info = self.implementation.ds_class(df).info()
             bench_results = {
-                'x_train_bytes': X_train.nbytes,
-                'x_test_bytes': X_test.nbytes,
-                'x_train_shape': X_train.shape,
-                'x_test_shape': X_test.shape,
                 'repeats': self.repeats,
                 'start': time.time(),
             }
             bench_results.update(info)
             bench_results.update(self.implementation.get_info())
             impl_prefix = bench_results['config_id']
-            del X_train
-            del X_test
 
             profilings = ['memory', 'energy', 'runtime']
-            # if self.impl_config['Platform'] == 'GPU':
-                # profilings.append('gpu')
+            if 'uses_gpu' in bench_results and bench_results['uses_gpu']:
+                profilings.append('gpu')
 
-            # run profiling
-            df_name = os.path.basename(df).split('.')[0]
+            # generate logname
+            if len(os.path.basename(df).split('.')[0]) > 0:
+                df_name = os.path.basename(df).split('.')[0]
+            else:
+                df_name = info['name'].lower()
             log_basename = f'{impl_prefix}_{df_name}'
             full_logname = os.path.join(self.logdir, f'{log_basename}.json')
             
-            if os.path.isfile(full_logname): # if present, load current log state
+            # if present, load current log state
+            if os.path.isfile(full_logname):
                 with open(full_logname, 'r', encoding='utf-8') as lf:
                     bench_results = json.load(lf)
                     if 'name' not in bench_results:
@@ -72,6 +74,7 @@ class Implementation_Profiling:
                     if bench_results['repeats'] < self.repeats:
                         bench_results['repeats'] = self.repeats
 
+            # run profiling
             for repeat in range(self.repeats):
                 if 'TRAIN_RUNTIME_WCT' not in bench_results or len(bench_results['TRAIN_RUNTIME_WCT']) <= repeat: # otherwise this repeat was already run and logged
                     for profiling, train_apply in itertools.product(profilings, ['train', 'apply']):
@@ -119,11 +122,14 @@ class Implementation_Profiling:
         return scaling_measurements, benchmark_measurements
 
 
-class Implementation_Reliability_Testing:
+class ImplementationReliabilityTesting:
 
-    def __init__(self, implementation, checks, implemented_checks=None):
+    def __init__(self, implementation, checks, args=None, implemented_checks=None):
         self.implementation = implementation
         self.checks = checks
+        self.def_args = defaultdict(lambda: None)
+        if args is not None:
+            self.def_args.update(args)
         if implemented_checks is None: # defaults
             implemented_checks = [probability_recovery, runtime_complexity, memory_complexity]
         self.execute = {check.__name__: check for check in implemented_checks if check.__name__ in self.checks.values()}
@@ -132,10 +138,25 @@ class Implementation_Reliability_Testing:
             raise RuntimeError(f'Could not find implementations for checks: {" ".join(not_implemented)}.')
 
     def run(self, args=None):
-        def_args = defaultdict(lambda: None)
-        if args is not None:
-            def_args.update(args)
         reliability_checks = {}
         for name, check in self.execute.items():
-            reliability_checks[name] = check(self.implementation, def_args[name])
+            reliability_checks[name] = check(self.implementation, self.def_args[name])
         return reliability_checks
+
+
+class ImplementationRobustnessTesting:
+
+    def __init__(self, implementation, benchmark, logdir, additional_robustness_tests=None):
+        self.implementation = implementation
+        self.benchmark = benchmark
+        self.logdir = logdir
+        self.robustness_tests = [CorruptionTest, PerturbationTest, NoiseTest]
+        if additional_robustness_tests is not None:
+            self.robustness_tests + additional_robustness_tests
+
+    def run(self):
+        results = {}
+        for test_class in self.robustness_tests:
+            test = test_class(self.implementation, self.benchmark, self.logdir)
+            results[test.id()] = test.run()
+        return results

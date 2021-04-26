@@ -5,23 +5,20 @@ class BaseImplementation:
         self.ds_class = None
         self.cl_file = None
 
-    def name(self):
-        return 'Default Implementation'
-
     # METHOD TO OVERRIDE:
 
     def prepare(self, args):
         raise NotImplementedError
 
     def get_info(self):
+        # info dict has to contain fields 'config_id' (str value) and 'uses_gpu' (bool value)
         raise NotImplementedError
 
     def get_meta_info(self):
         raise NotImplementedError
     
-    def train(self, X, y=None, ds_info=None):
-        # for generative models, no y should be required
-        raise NotImplementedError
+    def train(self, data, ds_info=None):
+        raise NotImplementedError 
 
-    def apply(self, X, ds_info=None):
+    def apply(self, data, ds_info=None):
         raise NotImplementedError

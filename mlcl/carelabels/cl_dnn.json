@@ -1,0 +1,42 @@
+{
+    "AlexNet":
+    {
+        "name": "AlexNet",
+        "relative_memory": 61100840.0,
+        "relative_runtime": 1429383808.0,
+        "accuracy": 56.522,
+        "train_energy": 2.4696,
+        "description": "Conv neural network, winner of 2012 ImageNet challenge",
+        "dataset": "ImageNet"
+    },
+    "ResNet-18":
+    {
+        "name": "ResNet-18",
+        "relative_memory": 11689512.0,
+        "relative_runtime": 3638132736.0,
+        "accuracy": 69.758,
+        "train_energy": 6.5532,
+        "description": "Convolutional neural network with 18 layers",
+        "dataset": "ImageNet"
+    },
+    "MobileNetV3_Large":
+    {
+        "name": "MobileNetV3_Large",
+        "relative_memory": 5483032.0,
+        "relative_runtime": 450884912.0,
+        "accuracy": 74.042,
+        "train_energy": 35.126,
+        "description": "Convolutional neural network for mobile phones",
+        "dataset": "ImageNet"
+    },
+    "VGG11":
+    {
+        "name": "VGG11",
+        "relative_memory": 132863336.0,
+        "relative_runtime": 15233132544.0,
+        "accuracy": 69.02,
+        "train_energy": 18.12,
+        "description": "Very deep convoulational neural network",
+        "dataset": "ImageNet"
+    }
+}

@@ -1,0 +1,4 @@
+{
+    "model": "MobileNetV3_Large",
+    "gpu": false
+}

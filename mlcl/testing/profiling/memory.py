@@ -29,8 +29,8 @@ class MemoryProfiling(Profiling):
         mem_results = {}
         display_memory.start()
         mem_results['PRE'] = p.memory_full_info().rss
-        func()
+        result = func()
         display_memory.stop()
         display_memory.join()
         mem_results['ENC'] = encode(display_memory.res)
-        return mem_results
+        return mem_results, result

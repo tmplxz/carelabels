@@ -14,11 +14,11 @@ networkx~=2.5
 
 # DNN experiments
 --find-links https://download.pytorch.org/whl/torch_stable.html
-torch==1.8.1+cpu
-torchvision==0.9.1+cpu
-torchaudio===0.8.1
-# OR
-# torch==1.8.1+cu102
-# torchvision==0.9.1+cu102
+# torch==1.8.1+cpu
+# torchvision==0.9.1+cpu
 # torchaudio===0.8.1
+# OR
+torch==1.8.1+cu102
+torchvision==0.9.1+cu102
+torchaudio===0.8.1
 opencv-python~=4.5.1.48

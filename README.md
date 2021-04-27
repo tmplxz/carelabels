@@ -33,7 +33,7 @@ For using it, you might have to change some access permissions, exemplary comman
 
 ### DNN Specifics
 
-Per default, PyTorch will be installed for CPU only, but you can simply change the according lines in the `requirements.txt`.
+Per default, PyTorch will be installed for GPU use, but you can simply change the according lines in the `requirements.txt`.
 
 If you want to perform experiments on your own, download the `ImageNet` data as well as robustness data from <https://github.com/hendrycks/robustness>. Make sure that all three lie in the same directory, e.g. `<path>/imagenet/...`, `<path>/imagenet-c/...`, `<path>/imagenet-p/...`.
 
@@ -61,7 +61,7 @@ The verification suite can be run via the `main.py`, it creates a whole bunch of
 #### DNN Experiments
 During our paper experiments we worked with multiple prototype scripts, which together generated a big `.csv` report, that was then assessed for generating the care labels.
 You can inspect this report (`results` folder) and generate the care labels via running the `generate_dnn_labels.py` script.
-Note that before the submission, we had a small code error that lead to faulty results for the Corruption robustness test, accordingly the results in the paper slightly differ from this repository and will be fixed upon camera-ready submission.
+Note that we decided to change the reported `mCE` to `relative mCE` for the Corruption robustness test in the final camera-ready submission, so values and ranking can slightly change.
 
 We incorporated all functionality into our main software, but do not yet have the complete logs and results for sharing.
 You can however already perform the experiments yourself by running `python main.py` (pass the directory with `ImageNet` for `--benchmark`).

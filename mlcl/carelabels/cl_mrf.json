@@ -1,6 +1,6 @@
 {
   "name": "$Type + $Inference",
-  "description": "$Type with $Inference on grid strutcture.",
+  "description": "$Type with $Inference on grid structure.",
   "runtime": -1,
   "memory": 1,
   "criteria": [

@@ -112,6 +112,10 @@ class ExpertKnowledgeDatabase:
                 self.label_info[field.capitalize()] = [value, check_scale(value, self.scales[field])]
             else:
                 self.label_info[field.capitalize()] = value
+        if cl_content[config['model']]['relative_memory'] < 10e6:
+            self.label_info['badges'] = ['Suitable for edge devices?']
+        else:
+            self.label_info['badges'] = []
         return config
 
     def parse_method_config(self, cl_content, config):

@@ -82,6 +82,11 @@ for model, name, descr in zip(models, cl_names, descriptions):
 
         info['benchmark'] = bench
         info['Execution information'] = exec_info
+
+        if df_row['params'].item() < 10e6:
+            info['badges'] = ['Suitable for edge devices?']
+        else:
+            info['badges'] = []
     	
         outname = f'label_{model}_{plat}.svg'
 

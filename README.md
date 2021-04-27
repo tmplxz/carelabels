@@ -7,18 +7,74 @@ It is closely related to research work which is currently reviewed for ECML 2021
 ## Results
 You can find all results (logs & care labels) in the `results` directory.
 
-## Requirements
-We tested our software on `Ubuntu 18.04`, with Intel CPUs and NVIDIA GPUs, other architures are unlikely to be supported.
+## Docker
 
-## Setup
-Install python3.8 (or create an Anaconda environment)
+Since various dependencies (software and data) are required, we provide a docker image for easier usage. 
+
+Build the docker image:
 
 ```bash
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.8
+docker build -t mlcl .
 ```
-Install required packages
+
+Start the container:
+
+```bash
+docker run -it --rm --name mlcl -v `pwd`:/src/mlcl/ mlcl bash
+```
+
+Inside the container run:
+
+### MRF Experiments
+
+```bash
+# Set /src/mlcl/ as workdir.
+cd /src/mlcl/
+
+# CPU
+python3 main.py --implementation PXMRF --config cfg/mrf_bp.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data /usr/local/data/ --out label_mrf_bp_cpu.svg
+python3 main.py --implementation PXMRF --config cfg/mrf_jt.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data /usr/local/data/ --out label_mrf_jt_cpu.svg
+
+# GPU
+export PX_EXTINF=/usr/local/lib/python3.8/dist-packages/pxpy/lib/libpx_ext_culbp.so
+python3 main.py --implementation PXMRF --config cfg/mrf_bp_gpu.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data /usr/local/data/ --out label_mrf_bp_gpu.svg
+
+export PX_EXTINF=/usr/local/lib/libexternal_gpu_single_buffer.so
+python3 main.py --implementation PXMRF --config cfg/mrf_jt_gpu.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data /usr/local/data/ --out label_mrf_jt_gpu.svg
+
+```
+
+### DNN Experiments
+
+```bash
+# Set /src/mlcl/ as workdir.
+cd /src/mlcl/
+
+# To generate care labels based on our logs, run:
+python3 generate_dnn_labels.py
+
+# To run DNN experiments, you have to install ImageNet locally (explained in more detail below) and mount it into the container
+# Those experiments (especially the robustness tests) might take several days or even weeks, even with state-of-the-art hardware
+python3 main.py --benchmark [imagenet_directory] --config cfg/alexnet_cpu.json --log-dir results/dnn-results/ 
+python3 main.py --benchmark [imagenet_directory] --config cfg/alexnet_gpu.json --log-dir results/dnn-results/ 
+
+python3 main.py --benchmark [imagenet_directory] --config cfg/mobilenet_cpu.json --log-dir results/dnn-results/ 
+python3 main.py --benchmark [imagenet_directory] --config cfg/mobilenet_gpu.json --log-dir results/dnn-results/ 
+
+python3 main.py --benchmark [imagenet_directory] --config cfg/resnet_cpu.json --log-dir results/dnn-results/ 
+python3 main.py --benchmark [imagenet_directory] --config cfg/resnet_gpu.json --log-dir results/dnn-results/ 
+
+python3 main.py --benchmark [imagenet_directory] --config cfg/vgg_cpu.json --log-dir results/dnn-results/ 
+python3 main.py --benchmark [imagenet_directory] --config cfg/vgg_gpu.json --log-dir results/dnn-results/ 
+```
+
+If you don't want to use Docker, you can install and run all functionality on your own system.
+
+## Requirements
+We tested our software on `Ubuntu 20.04`, with Intel CPUs and NVIDIA GPUs, other architures are unlikely to be supported.
+
+## Setup
+Use python3.8 or create an Anaconda environment, and install required packages
 ```bash
 pip3 install -r requirements.txt
 ```
@@ -39,6 +95,7 @@ For using it, you might have to change some access permissions, exemplary comman
 Per default, PyTorch will be installed for GPU use, but you can simply change the according lines in the `requirements.txt`.
 
 If you want to perform experiments on your own, download the `ImageNet` data as well as robustness data from <https://github.com/hendrycks/robustness>. Make sure that all three lie in the same directory, e.g. `<path>/imagenet/...`, `<path>/imagenet-c/...`, `<path>/imagenet-p/...`.
+For the latter, we provide a small helper script `download_imagenet_robustness.sh`.
 
 For Noise robustness tests we use `cleverhans` attacks. The current version is not yet on PyPI, so install it via
 
@@ -56,7 +113,7 @@ They can be manually fixed by modifying the installed `__init__.py` file in the 
 - replace line 873  (`EXTINF = ext_lib.external(itype,vtype)`) with `EXTINF = ext_lib.external(self.itype,self.vtype)`
 - replace line 2251 (`EXTINF = ext_lib.external(itype,vtype)`) with `EXTINF = ext_lib.external(switch_type(itype), switch_type(vtype))`
 
-You can download our synthetic data from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>, the directory with the unpacked data (`.pkl` files) has to be passed to the software.
+You can download our synthetic data from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>, the directory with the data (`.pkl` files) has to be passed to the software via `--scaling-data`.
 
 ## Software Usage
 The verification suite can be run via the `main.py`, it creates a whole bunch of logfiles, and finally aggregates them into the care label.
@@ -80,10 +137,10 @@ You can thus make use of our experiment logs by passing the folder `results/mrfl
 The resulting commands are
 
 BP on CPU:
-`python main.py --implementation PXMRF --config cfg/mrf_bp.json --repeats 4 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_bp_cpu.svg`
+`python main.py --implementation PXMRF --config cfg/mrf_bp.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_bp_cpu.svg`
 
 JT on CPU:
-`python main.py --implementation PXMRF --config cfg/mrf_jt.json --repeats 4 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_jt_cpu.svg`
+`python main.py --implementation PXMRF --config cfg/mrf_jt.json --repeats 5 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_jt_cpu.svg`
 
 If you want to rerun and generate new logs, firstly `export OMP_NUM_THREADS=1` for deactivating the `pxpy` internal CPU parallelization, and then pass an empty `--log-dir`.
 

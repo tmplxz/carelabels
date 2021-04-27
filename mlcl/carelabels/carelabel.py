@@ -25,6 +25,8 @@ cl_styles = [
     'st4',  # orange
     'st5',  # red
     'st16', # arrow grey
+    'st23', # black
+    'st8',  # white
     'st23', # n.a.
 ]
 
@@ -38,7 +40,9 @@ cl_nn_styles = [
     'st16', # yellow
     'st18', # orange
     'st20', # red
-    'st9' # arrow false
+    'st9',  # arrow false
+    'st26', # black
+    'st11',  # white
 ]
 
 
@@ -49,6 +53,31 @@ cl_text = [
     'D',
     '?'
 ]
+
+
+BADGE_MAP = {
+    'Provides Uncertainty?': 'B_UNCERT',
+    'Can be used on data streams?': 'B_STREAM',
+    'Suitable for edge devices?': 'B_EDGE',
+    'Is Robust?': 'B_ROBU'
+}
+
+
+T_UPWARDS = np.array([0,   -230])
+# transform="matrix(1 0 0 1 0 -230)"
+T_LEFT_UP = np.array([206, -115])
+# transform="matrix(1 0 0 1 206 -115)" 
+
+
+def align_badges(badges):
+    # TODO improve the badge alignment
+    transforms = {}
+    for badge in BADGE_MAP:
+        if badge == 'Provides Uncertainty?':
+            transforms[badge] = "matrix(1 0 0 1 206 -115)"
+        else:
+            transforms[badge] = "matrix(1 0 0 1 0 0)"
+    return transforms
 
 
 def get_compliance_checkmark(theory, practice):
@@ -75,7 +104,13 @@ class CareLabel:
         for child in root.iter():
             if 'id' in child.attrib and child.attrib['id'] in content_map:
                 if 'path' in child.tag or 'circle' in child.tag:
-                    child.attrib['class'] = content_map[child.attrib['id']]
+                    if isinstance(content_map[child.attrib['id']], str):
+                        child.attrib['class'] = content_map[child.attrib['id']]
+                    else: # tuple with style and transform information
+                        style, transform = content_map[child.attrib['id']]
+                        child.attrib['class'] = style
+                        child.attrib['transform'] = transform
+                    
                 if 'text' in child.tag or 'tspan' in child.tag:
                     child.text = content_map[child.attrib['id']]
 
@@ -87,6 +122,7 @@ class MethodCareLabel(CareLabel):
     def __init__(self, label_info):
         super().__init__(label_info, 'carelabel_design.svg')
         self.styles = cl_styles
+        self.label_info['badges'] = ['Provides Uncertainty?']
 
     def __str__(self):
         str_c = []
@@ -168,6 +204,17 @@ class MethodCareLabel(CareLabel):
         content_map.update({
             f'ENE_L{i}': self.styles[self.label_info["benchmark"]["energy_rating"] + 4] for i in range(40)
         })
+        # badges
+        transforms = align_badges(self.label_info["badges"])
+        for key, badge in BADGE_MAP.items():
+            if key in self.label_info["badges"]:
+                content_map.update({
+                    f'{badge}_{i}': (self.styles[9], transforms[key]) for i in range(10)
+                })
+            else:
+                content_map.update({
+                    f'{badge}_{i}': (self.styles[10], transforms[key]) for i in range(10)
+                })
 
         self.generate_image(content_map, fname)
 
@@ -249,5 +296,16 @@ class ModelCareLabel(CareLabel):
         content_map.update({
             f'ENE_L{i}': self.styles[self.label_info["benchmark"]["energy_rating"] + 4] for i in range(40)
         })
+        # badges
+        transforms = align_badges(self.label_info["badges"])
+        for key, badge in BADGE_MAP.items():
+            if key in self.label_info["badges"]:
+                content_map.update({
+                    f'{badge}_{i}': (self.styles[9], transforms[key]) for i in range(10)
+                })
+            else:
+                content_map.update({
+                    f'{badge}_{i}': (self.styles[10], transforms[key]) for i in range(10)
+                })
 
         self.generate_image(content_map, fname)

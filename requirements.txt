@@ -1,6 +1,7 @@
 # general
 numpy~=1.20.0
 scikit-learn~=0.24.1
+pandas~=1.2.4
 
 # profiling
 psutil~=5.8.0

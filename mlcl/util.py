@@ -54,6 +54,8 @@ def prepare_dataset_list(data_dir, benchmark_data):
 
 
 def aggregate_accuracy(measurements, rep_agg=np.mean):
+    if "APPLY_RUNTIME_Accuracy" not in measurements:
+        return 0
     return rep_agg(np.array(measurements["APPLY_RUNTIME_Accuracy"]) * 100)
 
 

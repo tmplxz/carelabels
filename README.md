@@ -4,6 +4,9 @@ This is a prototype certification suite, which generates **Care Labels** for tru
 It is closely related to research work which is currently reviewed for ECML 2021, where we explain the concepts of our certification suite in detail.
 **This is only a blinded preview for paper reviewers**, upon acceptance we will transfer this repository to the authors' GitHub.
 
+## Results
+You can find all results (logs & care labels) in the `results` directory.
+
 ## Requirements
 We tested our software on `Ubuntu 18.04`, with Intel CPUs and NVIDIA GPUs, other architures are unlikely to be supported.
 
@@ -55,29 +58,40 @@ They can be manually fixed by modifying the installed `__init__.py` file in the 
 
 You can download our synthetic data from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>, the directory with the unpacked data (`.pkl` files) has to be passed to the software.
 
-## Usage
+## Software Usage
 The verification suite can be run via the `main.py`, it creates a whole bunch of logfiles, and finally aggregates them into the care label.
 
 #### DNN Experiments
 During our paper experiments we worked with multiple prototype scripts, which together generated a big `.csv` report, that was then assessed for generating the care labels.
 You can inspect this report (`results` folder) and generate the care labels via running the `generate_dnn_labels.py` script.
-Note that we decided to change the reported `mCE` to `relative mCE` for the Corruption robustness test in the final camera-ready submission, so values and ranking can slightly change.
+Note that we intend to change the reported `mCE` to `relative mCE` for the Corruption robustness test in the camera-ready submission, so values and ranking can slightly change.
 
-We incorporated all functionality into our main software, but do not yet have the complete logs and results for sharing.
+We incorporated all DNN functionality into our main software, but do not yet have the complete logs and results for sharing.
 You can however already perform the experiments yourself by running `python main.py` (pass the directory with `ImageNet` for `--benchmark`).
 You can change defaults by passing different configurations (located in `cfg`).
 Note that performing robustness tests for DNN models takes several days even on modern hardware like `Nvidia A100` GPUs.
 
 #### MRF Experiments (CPU)
-Firstly, run `export OMP_NUM_THREADS=1` for deactivating the `pxpy` internal CPU parallelization.
-Similar to the DNN experiments, run `python main.py`, but pass `PXMRF` as implementation, and `cfg/mrf_bp.json` or `cfg/mrf_jt.json` as config.
-For data, pass the directory with the unpacking `.pkl` files as `--scaling-data`, and any of the file names for `--benchmark` (we used `grid_nodes14_states2_nsamples50000.pkl` in our experiments).
-You can also use our experiment logs instead of running the whole procedure on your own, simply download and unpack the `logs.7z` from <https://www.dropbox.com/sh/bcawvws67uy0v9s/AADF2TP6SVDEVeUahSUidvwVa?dl=0>.
+Experiments are run by passing `PXMRF` as implementation, and corresponding MRF configs.
+Pass the directory with the `.pkl` files as `--scaling-data`, and any of the file names for `--benchmark` (we used `grid_nodes14_states2_nsamples50000.pkl` in our experiments).
 
-Be aware that running experiments might take some time, especially with using JT und increasing number of `repeats`.
-The high runtime stems from the different profiling measurements (runtime, memory, energy), which are all run separately.
+Be aware that running experiments might take some time, especially with JT und increasing number of `repeats`.
+You can thus make use of our experiment logs by passing the folder `results/mrflogs` as `--log-dir`, so experiments are not rerun from scratch.
+The resulting commands are
+
+BP on CPU:
+`python main.py --implementation PXMRF --config cfg/mrf_bp.json --repeats 4 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_bp_cpu.svg`
+
+JT on CPU:
+`python main.py --implementation PXMRF --config cfg/mrf_jt.json --repeats 4 --log-dir results/mrflogs/ --benchmark grid_nodes14_states2_nsamples50000.pkl --scaling-data [data-dir] --out label_mrf_jt_cpu.svg`
+
+If you want to rerun and generate new logs, firstly `export OMP_NUM_THREADS=1` for deactivating the `pxpy` internal CPU parallelization, and then pass an empty `--log-dir`.
+
 
 #### MRF Experiments (GPU)
 For running `pxpy` on GPUs, you first have to set the `PX_EXTINF` variable towards the separately compiled inference engines.
 For LBP inference, simply `export PX_EXTINF=[pxpy install directory]/lib/libpx_ext_culbp.so`, and run the software with `--config cfg/mrf_bp_gpu.json`.
+
+
 For JT inference, we compiled a custom shared object which can be found in the `lib` directory of this repository, so `export PX_EXTINF=lib/libexternal_gpu_single_buffer.so`, and use `--config cfg/mrf_jt_gpu.json`.
+Associated logs from our experiments are also shared in the `results/mrflogs/` directory.

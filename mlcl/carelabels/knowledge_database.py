@@ -37,6 +37,7 @@ def check_fulfilled(all_criteria, bins):
                 not_fulfilled_crit[category].append(criterium)
         perc_fulfilled = len(fulfilled_criteria[category]) / len(criteria)
         rating[category] = check_scale(perc_fulfilled, bins)
+        # print(f'{category:<15} - {perc_fulfilled:5.2f} - {rating[category]} - {bins}')
         if category == 'Meta':
             rating[category] = -1
     return rating, fulfilled_criteria, not_fulfilled_crit
@@ -48,7 +49,7 @@ def update_criteria(crit1, crit2):
 
 
 def recursive_criteria_parse(criteria_node, criteria_value, lookup):
-    criteria = {'Expressivity': {}, 'Reliability': {}, 'Usability': {}, 'Meta': {}}
+    criteria = {'Expressivity': {}, 'Reliability': {}, 'Usability': {}, 'Resources': {}, 'Meta': {}}
     if isinstance(criteria_value, str):
         criteria[criteria_value][criteria_node] = criteria_node in lookup
         return criteria

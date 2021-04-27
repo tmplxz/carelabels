@@ -54,6 +54,8 @@
           "Has a known PAC bound",
           "Sample Complexity?",
           "Exact inference?",
+          "Error bounds on loss?",
+          "Guaranteed convergence?",
 
           "Is free of hyperparameters",
           "Hyperparameters are easy to interpret?"
@@ -62,9 +64,6 @@
     },
     "Loss": {
       "Likelihood": {
-        "criteria": [
-          "Error bounds on loss?"
-        ]
       }
     }
   }

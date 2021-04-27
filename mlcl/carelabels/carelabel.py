@@ -9,7 +9,8 @@ from mlcl.util import reformat_value
 
 
 def flip_rating(info):
-    info['Accuracy'][1] = 3 - info['Accuracy'][1]
+    if 'Accuracy' in info:
+        info['Accuracy'][1] = 3 - info['Accuracy'][1]
     info['benchmark']['accuracy_rating'] = 3 - info['benchmark']['accuracy_rating']
     return info
 

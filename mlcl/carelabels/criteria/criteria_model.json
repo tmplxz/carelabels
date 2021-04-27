@@ -6,10 +6,11 @@
     "Provides true probabilities?": "Expressivity",
 
     "Robustness tests?": "Reliability",
-    "Memory complexity guarantees?": "Reliability",
-    "Runtime complexity guarantees?": "Reliability",
+    "Memory complexity guarantees?": "Resources",
+    "Runtime complexity guarantees?": "Resources",
     "Sample Complexity?": "Reliability",
     "Has a known PAC bound": "Reliability",
+    "Guaranteed convergence?": "Reliability",
 
     "Easy to train": "Usability",
     "Is free of hyperparameters": "Usability",

@@ -2,6 +2,8 @@
     "Exact inference?": "Reliability",
     "Has a known PAC bound": "Reliability",
     "Sample Complexity?": "Reliability",
+    "Error bounds on loss?": "Reliability",
+    "Guaranteed convergence?": "Reliability",
 
     "Is free of hyperparameters": "Usability",
     "Hyperparameters are easy to interpret?": "Usability"

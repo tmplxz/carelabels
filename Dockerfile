@@ -1,5 +1,7 @@
 FROM nvcr.io/nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 ENV OMP_NUM_THREADS=1
 
 RUN apt-get update &&   \
@@ -10,7 +12,12 @@ RUN apt-get update &&   \
         python3-pip     \
         wget            \
         sed             \
-        unzip
+        unzip           \
+        libgl1-mesa-glx \
+        libglib2.0-0    \
+        sudo
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN /usr/bin/pip3 install --upgrade pip                                 && \
     cd /tmp                                                             && \

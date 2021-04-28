@@ -1,16 +1,17 @@
 import torch
-from torchvision import models as torch_models, datasets
+from torchvision import models as torch_models
 
 from mlcl.implementations import BaseImplementation
 from mlcl.datasets import ImageNet
 
 
-models = {
-    'AlexNet': torch_models.alexnet(pretrained=True),
-    'ResNet-18': torch_models.resnet18(pretrained=True),
-    'MobileNetV3_Large': torch_models.mobilenet_v3_large(pretrained=True),
-    'VGG11': torch_models.vgg11(pretrained=True)
+MODELNAME_MAP = {
+    'AlexNet': 'alexnet',
+    'ResNet-18': 'resnet18',
+    'MobileNetV3_Large': 'mobilenet_v3_large',
+    'VGG11': 'vgg11'
 }
+
 
 class PretrainedImageNetDNN(BaseImplementation):
 
@@ -25,7 +26,7 @@ class PretrainedImageNetDNN(BaseImplementation):
     def prepare(self, args):
         self.modelname = args['model']
         self.gpu = args['gpu']
-        self.model = models[self.modelname]
+        self.model = torch_models.__dict__[MODELNAME_MAP[self.modelname]](pretrained=True)
 
     def get_info(self):
         cfg = {

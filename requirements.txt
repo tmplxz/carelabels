@@ -10,7 +10,7 @@ psutil~=5.8.0
 pynvml~=8.0.4
 
 # PXPY / MRF experiments
-pxpy~=1.0a66
+pxpy~=1.0a68
 networkx~=2.5
 
 # DNN experiments

@@ -155,6 +155,8 @@ class ExpertKnowledgeDatabase:
         self.label_info.update(rating)
         self.label_info['Fulfilled criteria'] = fulfilled
         self.label_info['Not fulfilled criteria'] = not_fulfilled
+        # TODO refine this, derive from criteria
+        self.label_info['badges'] = ['Provides Uncertainty?']
         # find which reliability checks need to be run
         for crit, _ in list(self.checks.items()):
             if not any([crit in ful for ful in fulfilled.values()]):

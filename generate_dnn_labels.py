@@ -75,7 +75,7 @@ for model, name, descr in zip(models, cl_names, descriptions):
                 info[key] = [value, check_scale(value, default_scales[key.lower()])]
 
         info['Software tests'] = {
-            'corruptiontest': {'rating': check_scale(df_row['mce@top1'].item(), default_scales['corruptiontest'])},
+            'corruptiontest': {'rating': check_scale(df_row['rel_mce@top1'].item(), default_scales['corruptiontest'])},
             'perturbationtest': {'rating': check_scale(df_row['mean_flip_probability'].item(), default_scales['perturbationtest'])},
             'noisetest': {'rating': check_scale(df_row['eps'].item(), default_scales['noisetest'])}
         }

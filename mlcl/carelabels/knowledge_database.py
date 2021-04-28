@@ -17,7 +17,7 @@ default_scales = {
     'train_energy':       [     20,         10,         5       ],
     'criteria_fulfilled': [     0.2,        0.5,        0.75    ],
     'accuracy':           [     70,         69.5,       69      ],
-    'corruptiontest':     [     0.95,       0.9,        0.8     ],
+    'corruptiontest':     [     1.1,        1.01,       0.95     ],
     'perturbationtest':   [     0.085,      0.07,       0.065   ],
     'noisetest':          [     2e-7,       3e-7,       5e-7    ],
 }

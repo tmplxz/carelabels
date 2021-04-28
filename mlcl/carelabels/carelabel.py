@@ -308,7 +308,7 @@ class ModelCareLabel(CareLabel):
         # performance labels, styles 4-7, consisting of several paths
         accuracy_check = self.label_info["benchmark"]["accuracy"] + 1e-4 >= self.label_info["Accuracy"][0]
         content_map['ACC_L'] = self.styles[self.label_info["benchmark"]["accuracy_rating"] + 4]
-        content_map['ACC_A'] = self.styles[4] if accuracy_check else self.styles[-1]
+        content_map['ACC_A'] = self.styles[4] if accuracy_check else self.styles[8]
         content_map.update({
             f'RUN_L{i}': self.styles[self.label_info["benchmark"]["runtime_rating"] + 4] for i in range(40)
         })

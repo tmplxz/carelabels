@@ -6,6 +6,7 @@ import pandas as pd
 
 from .base import RobustnessTest
 from mlcl.torch_utils import AverageMeter
+from mlcl.implementations.dnn import MODELNAME_MAP
 
 
 IMAGE_NET_C = [
@@ -29,7 +30,23 @@ IMAGE_NET_C = [
 
 
 def evaluate_error(df):
+    # TODO instead read clean accuracy from logs, and only use reference values from AlexNet
+    clean_acc_df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'imagenet_clean_acc.csv'))
+
+    df['clean_top1'] = 0.0
+
+    for index, row in df.iterrows():
+        row = row.copy()
+
+        # Select clean value
+        other = clean_acc_df[clean_acc_df['model.name'] == row['model.name']]
+
+        df.loc[index, 'clean_top1'] = float(other['top1'])
+
     df['top1_error'] = 100 - df['top1']
+    df['top1_error_clean'] = 100 - df['clean_top1']
+
+    df['relative_top1_error'] = df['top1_error'] - df['top1_error_clean']
 
     # Compute Corruption Error for each severity level and each model
     corruption_df = df.groupby(['model.name', 'corruption'], as_index=False).sum()
@@ -38,6 +55,7 @@ def evaluate_error(df):
     corruption_df.drop(columns=['severity'], inplace=True)
 
     corruption_df['top1_error_normalized'] = 0.0
+    corruption_df['relative_top1_error_normalized'] = 0.0
 
     # Normalize with imagenet!
     for index, row in corruption_df.iterrows():
@@ -48,7 +66,7 @@ def evaluate_error(df):
         # Get row which is used as denominator for the normalization
         ref_row = corruption_df[(corruption_df['model.name'] == ref_key) & (corruption_df['corruption'] == corruption)]
 
-        for c in ['top1_error']:
+        for c in ['top1_error', 'relative_top1_error']:
             # Skip meta information
             if c in ['model.name', 'corruption']:
                 continue
@@ -81,11 +99,15 @@ class CorruptionTest(RobustnessTest):
 
     def run_test(self):
 
-        data_handler = self.implementation.ds_class(self.benchmark)
+        # TODO improve this by using self.implementation.get_info()['config_id']
+        modelkey = MODELNAME_MAP[self.implementation.modelname]
 
         if os.path.exists(self.full_log):
             result_df = pd.read_csv(self.full_log)
         else:
+
+            data_handler = self.implementation.ds_class(self.benchmark)
+            
             result_df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'corruption_reference.csv'))
             result_df = result_df.drop(columns='top5')
 
@@ -101,7 +123,9 @@ class CorruptionTest(RobustnessTest):
                             'details': {
                                 'top1': 0,
                                 'top1_error': 0,
-                                'top1_error_normalized': 0
+                                'top1_error_normalized': 0,
+                                'relative_top1_error': 0,
+                                'relative_top1_error_normalized': 0
                             }
                         }
 
@@ -112,7 +136,7 @@ class CorruptionTest(RobustnessTest):
                         avg_acc.update(np.count_nonzero(y_hat==y) / y_hat.shape[0] * 100, y_hat.shape[0])
 
                     result_df = result_df.append({
-                        'model.name': 'tested',
+                        'model.name': modelkey,
                         'corruption': corruption,
                         'severity': severity,
                         'top1': avg_acc.avg,
@@ -123,11 +147,13 @@ class CorruptionTest(RobustnessTest):
         error_df = evaluate_error(result_df)
         
         return {
-            'score': error_df[error_df['model.name'] == 'tested']['top1_error_normalized'].item(),
+            'score': error_df[error_df['model.name'] == modelkey]['relative_top1_error_normalized'].item(),
             'description': 'Common visual image corruptions with different levels of severity.',
             'details': {
-                'top1': error_df[error_df['model.name'] == 'tested']['top1'].item(),
-                'top1_error': error_df[error_df['model.name'] == 'tested']['top1_error'].item(),
-                'top1_error_normalized': error_df[error_df['model.name'] == 'tested']['top1_error_normalized'].item()
+                'top1': error_df[error_df['model.name'] == modelkey]['top1'].item(),
+                'top1_error': error_df[error_df['model.name'] == modelkey]['top1_error'].item(),
+                'top1_error_normalized': error_df[error_df['model.name'] == modelkey]['top1_error_normalized'].item(),
+                'relative_top1_error': error_df[error_df['model.name'] == modelkey]['relative_top1_error'].item(),
+                'relative_top1_error_normalized': error_df[error_df['model.name'] == modelkey]['relative_top1_error_normalized'].item(),
             }
         }

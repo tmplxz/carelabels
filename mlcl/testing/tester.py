@@ -58,7 +58,7 @@ class ImplementationProfiling:
                 profilings.append('gpu')
 
             # generate logname
-            if len(os.path.basename(df).split('.')[0]) > 0:
+            if len(os.path.basename(df).split('.')) > 1:
                 df_name = os.path.basename(df).split('.')[0]
             else:
                 df_name = info['name'].lower()

@@ -10,6 +10,9 @@ You can find all results (logs & care labels) in the `results` directory.
 ## Docker
 
 Since various dependencies (software and data) are required, we provide a docker image for easier usage. 
+If you want to use gpu acceleration inside the container, we recommend you to use the [Nvidia container runtime](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/overview.html). 
+In case your setup is incompatible with the selected cuda and pytorch versions, adjust the respective version in the dockerfile (baseimage) and requirements.txt (torch) to your needs.
+
 
 Build the docker image:
 
@@ -17,7 +20,7 @@ Build the docker image:
 docker build -t mlcl .
 ```
 
-Start the container:
+Start the container. To use gpu acceleration add ```--gpus=all```:
 
 ```bash
 docker run -it --rm --name mlcl -v `pwd`:/src/mlcl/ mlcl bash

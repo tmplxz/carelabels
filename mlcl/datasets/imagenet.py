@@ -11,9 +11,16 @@ from mlcl.torch_utils import VideoFolder
 
 class ImageNet(DatasetBase):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, pin_memory=False, val_batch_size=32, corruption_bs=32, perturbation_bs=2):
+        super().__init__(cfg)
         self.rootdir = cfg
-        val = os.path.join(cfg, 'imagenet', 'val') # only use validation data
+
+        self.pin_memory = pin_memory
+        self.val_batch_size = val_batch_size
+        self.corruption_bs = corruption_bs
+        self.perturbation_bs = perturbation_bs
+
+        val = os.path.join(cfg, 'imagenet', 'val')  # only use validation data
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 
@@ -24,8 +31,8 @@ class ImageNet(DatasetBase):
                 transforms.ToTensor(),
                 normalize,
             ])),
-            batch_size=128, shuffle=False,
-            num_workers=0, pin_memory=True)
+            batch_size=self.val_batch_size, shuffle=False,
+            num_workers=0, pin_memory=self.pin_memory)
 
     def get_train(self):
         None
@@ -46,7 +53,7 @@ class ImageNet(DatasetBase):
         trues = 0.0
         total = 0.0
         for y_hat, (_, y) in zip(prediction, self.val_loader):
-            trues += np.count_nonzero(y_hat==y)
+            trues += np.count_nonzero(y_hat == y)
             total += y.numpy().size
         return {'Accuracy': trues / total}
 
@@ -60,11 +67,10 @@ class ImageNet(DatasetBase):
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225]),
+                                     std=[0.229, 0.224, 0.225]),
             ])),
-            # TODO: Batch size, shuffle etc
-            batch_size=128, shuffle=False,
-            num_workers=2, pin_memory=True)
+            batch_size=self.corruption_bs, shuffle=False,
+            num_workers=2, pin_memory=self.pin_memory)
         return val_loader
 
     def get_perturbation(self, perturbation):
@@ -77,9 +83,8 @@ class ImageNet(DatasetBase):
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                    std=[0.229, 0.224, 0.225]),
+                                     std=[0.229, 0.224, 0.225]),
             ])),
-            # TODO: Batch size, shuffle etc
-            batch_size=32, shuffle=False,
-            num_workers=1, pin_memory=True)
+            batch_size=self.perturbation_bs, shuffle=False,
+            num_workers=1, pin_memory=self.pin_memory)
         return val_loader

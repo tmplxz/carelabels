@@ -49,6 +49,8 @@ python3 main.py --implementation PXMRF --config cfg/mrf_jt_gpu.json --repeats 5 
 
 ### DNN Experiments
 
+Note: If you receive GPU-Out-Of-Memory-Errors try to reduce the specified batch sizes in [mlcl/datasets/imagenet.py](mlcl/datasets/imagenet.py).
+
 ```bash
 # Set /src/mlcl/ as workdir.
 cd /src/mlcl/

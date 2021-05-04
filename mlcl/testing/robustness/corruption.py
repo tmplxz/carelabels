@@ -5,9 +5,8 @@ import numpy as np
 import pandas as pd
 
 from .base import RobustnessTest
-from mlcl.torch_utils import AverageMeter
+from mlcl.torch_utils import AverageMeter, accuracy
 from mlcl.implementations.dnn import MODELNAME_MAP
-
 
 IMAGE_NET_C = [
     'gaussian_noise',
@@ -86,7 +85,6 @@ def evaluate_error(df):
 
 class CorruptionTest(RobustnessTest):
 
-
     def __init__(self, implementation, benchmark, logdir):
         super().__init__(implementation, benchmark, logdir)
         self.model = implementation.model
@@ -94,8 +92,8 @@ class CorruptionTest(RobustnessTest):
         self.model.to(self.implementation.device)
         self.severity_levels = [1, 2, 3, 4, 5]
         self.corruptions = IMAGE_NET_C
-        self.full_log = os.path.join(os.path.dirname(self.logname), os.path.basename(self.logname).split('.')[0] + '.csv')
-
+        self.full_log = os.path.join(os.path.dirname(self.logname),
+                                     os.path.basename(self.logname).split('.')[0] + '.csv')
 
     def run_test(self):
 
@@ -107,7 +105,7 @@ class CorruptionTest(RobustnessTest):
         else:
 
             data_handler = self.implementation.ds_class(self.benchmark)
-            
+
             result_df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'corruption_reference.csv'))
             result_df = result_df.drop(columns='top5')
 
@@ -132,20 +130,21 @@ class CorruptionTest(RobustnessTest):
                     for x, y in data:
                         x, y = x.to(self.implementation.device), y.to(self.implementation.device)
                         with torch.no_grad():
-                            y_hat = self.model(x).max(1)[1]
-                        avg_acc.update(np.count_nonzero(y_hat==y) / y_hat.shape[0] * 100, y_hat.shape[0])
+                            y_hat = self.model(x)
+                            acc = accuracy(y_hat, y, topk=(1,))[0]
+                        avg_acc.update(acc, y_hat.shape[0])
 
                     result_df = result_df.append({
                         'model.name': modelkey,
                         'corruption': corruption,
                         'severity': severity,
-                        'top1': avg_acc.avg,
+                        'top1': avg_acc.avg.cpu().item(),
                     }, ignore_index=True)
 
             result_df.to_csv(self.full_log)
 
         error_df = evaluate_error(result_df)
-        
+
         return {
             'score': error_df[error_df['model.name'] == modelkey]['relative_top1_error_normalized'].item(),
             'description': 'Common visual image corruptions with different levels of severity.',
@@ -154,6 +153,7 @@ class CorruptionTest(RobustnessTest):
                 'top1_error': error_df[error_df['model.name'] == modelkey]['top1_error'].item(),
                 'top1_error_normalized': error_df[error_df['model.name'] == modelkey]['top1_error_normalized'].item(),
                 'relative_top1_error': error_df[error_df['model.name'] == modelkey]['relative_top1_error'].item(),
-                'relative_top1_error_normalized': error_df[error_df['model.name'] == modelkey]['relative_top1_error_normalized'].item(),
+                'relative_top1_error_normalized': error_df[error_df['model.name'] == modelkey][
+                    'relative_top1_error_normalized'].item(),
             }
         }

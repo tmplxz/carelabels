@@ -54,6 +54,6 @@ class PretrainedImageNetDNN(BaseImplementation):
         for x, y in data:
             x, y = x.to(self.device), y.to(self.device)
             with torch.no_grad():
-                y_hat = self.model(x).max(1)[1]
+                y_hat = self.model(x).max(1)[1].cpu()
             preds.append(y_hat)
         return preds

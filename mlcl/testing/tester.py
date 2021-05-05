@@ -81,14 +81,17 @@ class ImplementationProfiling:
 
                         logname = os.path.join(self.logdir, f'{log_basename}_{train_apply}_{profiling}_{repeat}.json')
                         t1 = time.time()
-                        subprocess.run(["python", "-m" "mlcl.testing", "--profiling-method", profiling,
-                                        "--implementation", self.implementation.__class__.__name__, "--config", tmp,
-                                        "--datafile", df, "--train-apply", train_apply, "--log-file", logname])
+                        ret = subprocess.run(["python", "-m" "mlcl.testing", "--profiling-method", profiling,
+                                              "--implementation", self.implementation.__class__.__name__, "--config", tmp,
+                                              "--datafile", df, "--train-apply", train_apply, "--log-file", logname])
                         t2 = time.time()
                         print(f'PROFILING {logname} TOOK {t2 - t1}')
                         # load results
                         with open(logname, 'r', encoding='utf-8') as lfile:
                             results = json.load(lfile)
+                        if ret.returncode != 0:
+                            raise RuntimeError(f'Some error occured:\n\n{results["ERROR"]}\n\n{results["DETAILS"]}')
+                        else:
                             entry_prefix = train_apply.upper() + '_' + profiling.upper()
                             for field, values in results.items():
                                 key = entry_prefix + '_' + field

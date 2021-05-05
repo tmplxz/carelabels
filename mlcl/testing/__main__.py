@@ -1,5 +1,7 @@
 import json
 import argparse
+import sys
+import traceback
 
 from mlcl.testing.profiling.memory import MemoryProfiling
 from mlcl.testing.profiling.runtime import RuntimeProfiling
@@ -63,9 +65,16 @@ if __name__ == '__main__':
         prof, result = profiling.run(func)
         if result is not None:
             prof.update(data_handler.evaluate(result))
+        success = 0
 
     except Exception as exc:
-        prof = {'ERROR': str(exc)}
+        prof = {
+            'ERROR': str(exc),
+            'DETAILS': str(traceback.format_exc())
+        }
+        success = 1
 
     with open(args.log_file, 'w', encoding='utf-8') as lf:
         json.dump(prof, lf)
+
+    sys.exit(success)
